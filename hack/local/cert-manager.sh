@@ -26,8 +26,16 @@ function verify() {
     echo "ready"
 }
 
+function clean_up() {
+    i="--ignore-not-found=true"
+    kubectl delete $i mutatingwebhookconfiguration.admissionregistration.k8s.io/cert-manager-webhook
+    kubectl delete $i validatingwebhookconfiguration.admissionregistration.k8s.io/cert-manager-webhook
+}
+
 case "$1" in
     "install")
+        # make sure there is no previous webhooks installed:
+        clean_up
         kubectl apply -f ${CERT_MANAGER_INSTALLER}
         max_attempts=10
         counter=0
@@ -44,6 +52,7 @@ case "$1" in
         ;;
     "uninstall")
         kubectl delete -f ${CERT_MANAGER_INSTALLER}
+        clean_up
         ;;
     "verify")
         verify
